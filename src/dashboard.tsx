@@ -28,14 +28,15 @@ import {
     CardTitle,
     CardFooter,
     Checkbox,
+    Content,
     DescriptionList,
     DescriptionListDescription,
     DescriptionListGroup,
     DescriptionListTerm,
     EmptyState,
+    EmptyStateActions,
     EmptyStateBody,
-    EmptyStateHeader,
-    EmptyStateIcon,
+    EmptyStateFooter,
     Flex,
     FlexItem,
     Gallery,
@@ -580,9 +581,7 @@ const MachinesDashboard = () => {
         return (
             <Page className="dashboard-page">
                 <PageSection>
-                    <EmptyState>
-                        <EmptyStateHeader icon={<EmptyStateIcon icon={Spinner} />} titleText={_("Loading machines...")} />
-                    </EmptyState>
+                    <EmptyState titleText={_("Loading machines...")} icon={Spinner} />
                 </PageSection>
             </Page>
         );
@@ -592,8 +591,7 @@ const MachinesDashboard = () => {
         return (
             <Page className="dashboard-page">
                 <PageSection>
-                    <EmptyState>
-                        <EmptyStateHeader icon={<EmptyStateIcon icon={ServerIcon} />} titleText={_("No machines configured")} headingLevel="h2" />
+                    <EmptyState headingLevel="h2" titleText={_("No machines configured")} icon={ServerIcon}>
                         <EmptyStateBody>
                             {_("Add machines through the host selector in the top navigation to manage them from this dashboard.")}
                         </EmptyStateBody>
