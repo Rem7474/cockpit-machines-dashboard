@@ -382,6 +382,7 @@ const MachinesDashboard = () => {
         // Process each machine
         for (const machine of machineList) {
             let effectiveState = machine.state;
+            let machineLabel = machine.label;
             
             // If state is unknown or undefined, check the connection
             if (!effectiveState || effectiveState === "unknown") {
@@ -390,12 +391,18 @@ const MachinesDashboard = () => {
                     m.key === machine.key ? { ...m, state: "connecting" } : m
                 ));
                 
-                // Check the actual connection
-                effectiveState = await checkMachineConnection(machine.address);
+                // Check the actual connection and get hostname
+                const { state, hostname } = await checkMachineConnection(machine.address);
+                effectiveState = state;
                 
-                // Update with actual state
+                // Use hostname if available, otherwise keep existing label
+                if (hostname) {
+                    machineLabel = hostname;
+                }
+                
+                // Update with actual state and hostname
                 setMachines(prev => prev.map(m =>
-                    m.key === machine.key ? { ...m, state: effectiveState } : m
+                    m.key === machine.key ? { ...m, state: effectiveState, label: machineLabel } : m
                 ));
             }
             
@@ -453,9 +460,13 @@ const MachinesDashboard = () => {
             // Check connection if not already connected
             const machine = machines.find(m => m.key === host);
             if (machine && machine.state !== "connected") {
-                const connectionState = await checkMachineConnection(host);
+                const { state: connectionState, hostname } = await checkMachineConnection(host);
                 setMachines(prev => prev.map(m =>
-                    m.key === host ? { ...m, state: connectionState } : m
+                    m.key === host ? { 
+                        ...m, 
+                        state: connectionState,
+                        label: hostname || m.label 
+                    } : m
                 ));
                 
                 if (connectionState !== "connected") {

@@ -410,39 +410,53 @@ export function getStateDescription(state?: string): string {
 }
 
 /**
- * Check if a remote machine is reachable by attempting a simple command
- * Returns the connection state
+ * Get the hostname of a remote machine
  */
-export async function checkMachineConnection(host: string): Promise<"connected" | "failed"> {
+export async function getHostname(host: string): Promise<string | null> {
     if (host === "localhost") {
-        return "connected";
+        return window.location.hostname;
     }
     
     try {
-        // Try to run a simple command on the remote host
-        const channel = cockpit.channel({
-            host,
-            payload: "stream",
-            spawn: ["echo", "ok"],
-            superuser: false,
-        });
-        
-        return new Promise((resolve) => {
-            const timeout = setTimeout(() => {
-                channel.close();
-                resolve("failed");
-            }, 10000); // 10 second timeout
-            
-            channel.addEventListener("close", (ev: Event, options: { problem?: string }) => {
-                clearTimeout(timeout);
-                if (options.problem) {
-                    resolve("failed");
-                } else {
-                    resolve("connected");
-                }
-            });
-        });
+        const options = { host };
+        const result = await cockpit.spawn(["hostname"], options);
+        return result.trim() || null;
     } catch {
-        return "failed";
+        // Fallback: try reading /etc/hostname
+        try {
+            const options = { host };
+            const file = cockpit.file("/etc/hostname", options);
+            const content = await file.read();
+            file.close();
+            return content?.trim() || null;
+        } catch {
+            return null;
+        }
+    }
+}
+
+/**
+ * Check if a remote machine is reachable and get its hostname
+ * Returns the connection state and hostname
+ */
+export async function checkMachineConnection(host: string): Promise<{ state: "connected" | "failed"; hostname: string | null }> {
+    if (host === "localhost") {
+        return { state: "connected", hostname: window.location.hostname };
+    }
+    
+    try {
+        // Try to get hostname - this also verifies connectivity
+        const options = { host };
+        const result = await Promise.race([
+            cockpit.spawn(["hostname"], options),
+            new Promise<never>((_, reject) => 
+                setTimeout(() => reject(new Error("timeout")), 10000)
+            )
+        ]);
+        
+        const hostname = (result as string).trim() || null;
+        return { state: "connected", hostname };
+    } catch {
+        return { state: "failed", hostname: null };
     }
 }
