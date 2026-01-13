@@ -129,21 +129,19 @@ const MachineCard = ({
     const hasUpdates = machine.updates.total > 0;
     
     return (
-        <Card className={`machine-card ${stateClass}`} isSelectable isSelected={isSelected}>
-            <CardHeader
-                actions={{
-                    actions: (
-                        <Checkbox
-                            id={`select-${machine.key}`}
-                            isChecked={isSelected}
-                            onChange={(_event, checked) => onSelect(machine.key, checked)}
-                            isDisabled={machine.state !== "connected" || machine.updating}
-                        />
-                    ),
-                    hasNoOffset: true,
-                    className: undefined
-                }}
-            >
+        <Card 
+            className={`machine-card ${stateClass}`} 
+            isSelectable 
+            isSelected={isSelected}
+            selectableActions={{
+                selectableActionId: `select-${machine.key}`,
+                selectableActionAriaLabel: cockpit.format(_("Select $0"), machine.label),
+                isChecked: isSelected,
+                onChange: (_event, checked) => onSelect(machine.key, checked),
+                isDisabled: machine.state !== "connected" || machine.updating
+            }}
+        >
+            <CardHeader>
                 <CardTitle>
                     <div className="machine-header">
                         <div 
@@ -561,14 +559,87 @@ const MachinesDashboard = () => {
     useEffect(() => {
         loadMachines();
         
-        const unsubscribe = subscribeMachines(() => {
-            loadMachines();
+        const unsubscribe = subscribeMachines((newMachineList) => {
+            // Check if machine list has actually changed
+            setMachines(prev => {
+                const prevKeys = new Set(prev.map(m => m.key));
+                const newKeys = new Set(newMachineList.map(m => m.key));
+                
+                // Check if keys changed or if any machine state changed
+                const keysChanged = prevKeys.size !== newKeys.size ||
+                    [...prevKeys].some(k => !newKeys.has(k)) ||
+                    [...newKeys].some(k => !prevKeys.has(k));
+                
+                const stateChanged = newMachineList.some(newM => {
+                    const oldM = prev.find(p => p.key === newM.key);
+                    return oldM && oldM.state !== newM.state;
+                });
+                
+                if (keysChanged || stateChanged) {
+                    // Merge new machine data with existing update info
+                    return newMachineList.map(newM => {
+                        const existing = prev.find(p => p.key === newM.key);
+                        if (existing) {
+                            // Keep existing update info, update machine state
+                            const needsRefresh = existing.state !== newM.state && newM.state === "connected";
+                            return {
+                                ...existing,
+                                ...newM,
+                                updates: needsRefresh ? { ...existing.updates, loading: true } : existing.updates
+                            };
+                        }
+                        // New machine - will load updates
+                        return {
+                            ...newM,
+                            updates: {
+                                total: 0,
+                                security: 0,
+                                loading: newM.state === "connected",
+                                error: null,
+                                lastChecked: null
+                            }
+                        };
+                    });
+                }
+                return prev;
+            });
         });
         
         return () => {
             unsubscribe();
         };
-    }, [loadMachines]);
+    }, []);
+    
+    // Auto-refresh updates for machines that need it
+    useEffect(() => {
+        const machinesNeedingRefresh = machines.filter(m => 
+            m.state === "connected" && 
+            m.updates.loading && 
+            !m.updating
+        );
+        
+        for (const machine of machinesNeedingRefresh) {
+            getUpdatesForHost(machine.address).then(updates => {
+                setMachines(prev => prev.map(m =>
+                    m.key === machine.key ? { ...m, updates } : m
+                ));
+            }).catch(error => {
+                const err = error as Error;
+                setMachines(prev => prev.map(m =>
+                    m.key === machine.key ? {
+                        ...m,
+                        updates: {
+                            total: 0,
+                            security: 0,
+                            loading: false,
+                            error: err.message,
+                            lastChecked: new Date()
+                        }
+                    } : m
+                ));
+            });
+        }
+    }, [machines]);
     
     // Calculate summary stats
     const totalUpdates = machines.reduce((sum, m) => sum + (m.updates.total || 0), 0);

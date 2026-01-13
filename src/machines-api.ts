@@ -124,21 +124,43 @@ export function getMachinesList(): Machine[] {
 
 /**
  * Subscribe to machine list changes
+ * Uses polling since storage events only fire from other tabs
  */
 export function subscribeMachines(callback: (machines: Machine[]) => void): () => void {
-    const handler = (ev: StorageEvent) => {
+    let lastData = window.sessionStorage.getItem(SESSION_KEY);
+    let isActive = true;
+    
+    // Storage event handler (for changes from other tabs)
+    const storageHandler = (ev: StorageEvent) => {
         if (ev.key === SESSION_KEY && ev.storageArea === window.sessionStorage) {
+            lastData = ev.newValue;
             callback(getMachinesList());
         }
     };
     
-    window.addEventListener("storage", handler);
+    window.addEventListener("storage", storageHandler);
+    
+    // Polling to detect changes within the same tab
+    // Cockpit updates sessionStorage when machines change
+    const pollInterval = setInterval(() => {
+        if (!isActive) return;
+        
+        const currentData = window.sessionStorage.getItem(SESSION_KEY);
+        if (currentData !== lastData) {
+            lastData = currentData;
+            callback(getMachinesList());
+        }
+    }, 2000); // Poll every 2 seconds
     
     // Initial call
     callback(getMachinesList());
     
     // Return unsubscribe function
-    return () => window.removeEventListener("storage", handler);
+    return () => {
+        isActive = false;
+        window.removeEventListener("storage", storageHandler);
+        clearInterval(pollInterval);
+    };
 }
 
 /**
