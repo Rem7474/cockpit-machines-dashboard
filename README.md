@@ -14,9 +14,24 @@ Un module Cockpit standalone pour gérer les mises à jour sur toutes les machin
 
 ### Prérequis
 
-- Node.js 18+ et npm
-- Un serveur avec Cockpit installé
-- PackageKit sur les machines à gérer
+- **Git** : pour cloner le projet
+- **Node.js 18+** et **npm** : pour gérer les dépendances JavaScript
+- **Make** : pour exécuter les scripts de build et d'installation
+- Un serveur avec **Cockpit** installé
+- **PackageKit** sur les machines à gérer
+
+#### Installation des prérequis (Debian/Ubuntu)
+
+```bash
+sudo apt update
+sudo apt install git make npm nodejs
+```
+
+#### Installation des prérequis (RHEL/CentOS/Fedora)
+
+```bash
+sudo dnf install git make npm nodejs
+```
 
 ### Développement local
 
