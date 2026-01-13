@@ -1,0 +1,143 @@
+/*
+ * This file is part of Cockpit Machines Dashboard.
+ *
+ * Copyright (C) 2026
+ *
+ * Cockpit is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation; either version 2.1 of the License, or
+ * (at your option) any later version.
+ */
+
+/* PatternFly styles */
+@use "@patternfly/patternfly/patternfly.scss";
+@use "@patternfly/patternfly/patternfly-addons.scss";
+
+/* Dashboard specific styles */
+.dashboard-page {
+    padding: var(--pf-v6-global--spacer--md);
+
+    .machine-card {
+        min-width: 300px;
+        
+        &.machine-connected {
+            border-left: 3px solid var(--pf-v6-global--success-color--100);
+        }
+        
+        &.machine-failed {
+            border-left: 3px solid var(--pf-v6-global--danger-color--100);
+        }
+        
+        &.machine-connecting {
+            border-left: 3px solid var(--pf-v6-global--warning-color--100);
+        }
+    }
+
+    .machine-header {
+        display: flex;
+        align-items: center;
+        gap: var(--pf-v6-global--spacer--sm);
+        
+        .machine-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .machine-label {
+            font-weight: var(--pf-v6-global--FontWeight--bold);
+            flex-grow: 1;
+        }
+    }
+
+    .update-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--pf-v6-global--spacer--xs);
+    }
+
+    .update-badge-security {
+        color: var(--pf-v6-global--danger-color--100);
+    }
+
+    .update-badge-normal {
+        color: var(--pf-v6-global--info-color--100);
+    }
+
+    .machine-status {
+        display: flex;
+        align-items: center;
+        gap: var(--pf-v6-global--spacer--xs);
+        
+        &.status-connected {
+            color: var(--pf-v6-global--success-color--100);
+        }
+        
+        &.status-failed {
+            color: var(--pf-v6-global--danger-color--100);
+        }
+        
+        &.status-connecting {
+            color: var(--pf-v6-global--warning-color--100);
+        }
+    }
+
+    .summary-card {
+        margin-bottom: var(--pf-v6-global--spacer--md);
+        
+        .pf-v6-c-card__body {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--pf-v6-global--spacer--lg);
+        }
+    }
+
+    .summary-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 100px;
+        
+        .summary-value {
+            font-size: var(--pf-v6-global--FontSize--2xl);
+            font-weight: var(--pf-v6-global--FontWeight--bold);
+        }
+        
+        .summary-label {
+            font-size: var(--pf-v6-global--FontSize--sm);
+            color: var(--pf-v6-global--Color--200);
+        }
+    }
+
+    .action-bar {
+        display: flex;
+        gap: var(--pf-v6-global--spacer--md);
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: var(--pf-v6-global--spacer--md);
+    }
+
+    .update-progress {
+        margin-top: var(--pf-v6-global--spacer--sm);
+    }
+
+    .machine-details {
+        font-size: var(--pf-v6-global--FontSize--sm);
+        color: var(--pf-v6-global--Color--200);
+    }
+
+    .machines-gallery {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: var(--pf-v6-global--spacer--md);
+    }
+
+    .toolbar-section {
+        margin-bottom: var(--pf-v6-global--spacer--md);
+        padding: var(--pf-v6-global--spacer--md);
+        background-color: var(--pf-v6-global--BackgroundColor--100);
+        border-radius: var(--pf-v6-global--BorderRadius--sm);
+    }
+}

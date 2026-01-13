@@ -1,0 +1,48 @@
+{
+  "name": "cockpit-machines-dashboard",
+  "version": "1.0.0",
+  "description": "Cockpit module for managing updates across all connected machines",
+  "main": "src/index.js",
+  "scripts": {
+    "build": "webpack --mode production",
+    "watch": "webpack --mode development --watch",
+    "dev": "webpack --mode development",
+    "clean": "rm -rf dist/",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": [
+    "cockpit",
+    "dashboard",
+    "updates",
+    "machines",
+    "packagekit"
+  ],
+  "author": "",
+  "license": "LGPL-2.1-or-later",
+  "devDependencies": {
+    "@babel/core": "^7.23.0",
+    "@babel/preset-env": "^7.23.0",
+    "@babel/preset-react": "^7.23.0",
+    "@babel/preset-typescript": "^7.23.0",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "babel-loader": "^9.1.0",
+    "copy-webpack-plugin": "^11.0.0",
+    "css-loader": "^6.8.0",
+    "css-minimizer-webpack-plugin": "^5.0.0",
+    "mini-css-extract-plugin": "^2.7.0",
+    "sass": "^1.69.0",
+    "sass-loader": "^13.3.0",
+    "typescript": "^5.2.0",
+    "webpack": "^5.89.0",
+    "webpack-cli": "^5.1.0"
+  },
+  "dependencies": {
+    "@patternfly/patternfly": "^6.0.0",
+    "@patternfly/react-core": "^6.0.0",
+    "@patternfly/react-icons": "^6.0.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  }
+}

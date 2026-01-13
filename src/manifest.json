@@ -1,0 +1,31 @@
+{
+    "name": "machines-dashboard",
+    
+    "requires": {
+        "cockpit": "265"
+    },
+
+    "menu": {
+        "index": {
+            "label": "Machines Dashboard",
+            "order": 8,
+            "docs": [
+                {
+                    "label": "Managing connected machines",
+                    "url": "https://cockpit-project.org/guide/latest/"
+                }
+            ],
+            "keywords": [
+                {
+                    "matches": ["machines", "dashboard", "updates", "hosts", "servers", "remote", "fleet"]
+                },
+                {
+                    "matches": ["update all", "security updates", "patch", "upgrade"],
+                    "weight": 2
+                }
+            ]
+        }
+    },
+
+    "preload": ["index"]
+}
