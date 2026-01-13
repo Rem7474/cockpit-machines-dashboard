@@ -402,7 +402,47 @@ export function getStateDescription(state?: string): string {
         return _("Connecting...");
     case "failed":
         return _("Connection failed");
+    case "unknown":
+        return _("Not checked");
     default:
         return _("Unknown");
+    }
+}
+
+/**
+ * Check if a remote machine is reachable by attempting a simple command
+ * Returns the connection state
+ */
+export async function checkMachineConnection(host: string): Promise<"connected" | "failed"> {
+    if (host === "localhost") {
+        return "connected";
+    }
+    
+    try {
+        // Try to run a simple command on the remote host
+        const channel = cockpit.channel({
+            host,
+            payload: "stream",
+            spawn: ["echo", "ok"],
+            superuser: false,
+        });
+        
+        return new Promise((resolve) => {
+            const timeout = setTimeout(() => {
+                channel.close();
+                resolve("failed");
+            }, 10000); // 10 second timeout
+            
+            channel.addEventListener("close", (ev: Event, options: { problem?: string }) => {
+                clearTimeout(timeout);
+                if (options.problem) {
+                    resolve("failed");
+                } else {
+                    resolve("connected");
+                }
+            });
+        });
+    } catch {
+        return "failed";
     }
 }

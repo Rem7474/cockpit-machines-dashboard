@@ -76,7 +76,8 @@ import {
     getUpdatesForHost,
     installUpdatesOnHost,
     refreshPackageCache,
-    getStateDescription
+    getStateDescription,
+    checkMachineConnection
 } from "./machines-api";
 
 const _ = cockpit.gettext;
@@ -360,9 +361,10 @@ const MachinesDashboard = () => {
     const loadMachines = useCallback(async () => {
         const machineList = getMachinesList();
         
-        // Initialize with loading state
+        // Initialize with loading state - mark unknown states as "connecting"
         const initialMachines: MachineWithUpdates[] = machineList.map(m => ({
             ...m,
+            state: m.state || "unknown",
             updates: {
                 total: 0,
                 security: 0,
@@ -375,9 +377,28 @@ const MachinesDashboard = () => {
         setMachines(initialMachines);
         setLoading(false);
         
-        // Load updates for each connected machine
+        // Process each machine
         for (const machine of machineList) {
-            if (machine.state === "connected") {
+            let effectiveState = machine.state;
+            
+            // If state is unknown or undefined, check the connection
+            if (!effectiveState || effectiveState === "unknown") {
+                // Update to connecting state
+                setMachines(prev => prev.map(m =>
+                    m.key === machine.key ? { ...m, state: "connecting" } : m
+                ));
+                
+                // Check the actual connection
+                effectiveState = await checkMachineConnection(machine.address);
+                
+                // Update with actual state
+                setMachines(prev => prev.map(m =>
+                    m.key === machine.key ? { ...m, state: effectiveState } : m
+                ));
+            }
+            
+            // Now load updates if connected
+            if (effectiveState === "connected") {
                 try {
                     const updates = await getUpdatesForHost(machine.address);
                     setMachines(prev => prev.map(m =>
@@ -406,7 +427,7 @@ const MachinesDashboard = () => {
                             total: 0,
                             security: 0,
                             loading: false,
-                            error: machine.state === "failed" ? _("Machine not connected") : null,
+                            error: effectiveState === "failed" ? _("Machine not connected") : null,
                             lastChecked: null
                         }
                     } : m
@@ -417,19 +438,46 @@ const MachinesDashboard = () => {
     
     // Refresh updates for a specific machine
     const refreshMachine = useCallback(async (host: string) => {
+        // First, set to connecting/loading state
         setMachines(prev => prev.map(m =>
             m.key === host ? {
                 ...m,
+                state: m.state === "connected" ? "connected" : "connecting",
                 updates: { ...m.updates, loading: true }
             } : m
         ));
         
         try {
-            // Optionally refresh cache first
+            // Check connection if not already connected
+            const machine = machines.find(m => m.key === host);
+            if (machine && machine.state !== "connected") {
+                const connectionState = await checkMachineConnection(host);
+                setMachines(prev => prev.map(m =>
+                    m.key === host ? { ...m, state: connectionState } : m
+                ));
+                
+                if (connectionState !== "connected") {
+                    setMachines(prev => prev.map(m =>
+                        m.key === host ? {
+                            ...m,
+                            updates: {
+                                total: 0,
+                                security: 0,
+                                loading: false,
+                                error: _("Machine not connected"),
+                                lastChecked: new Date()
+                            }
+                        } : m
+                    ));
+                    return;
+                }
+            }
+            
+            // Refresh cache and get updates
             await refreshPackageCache(host);
             const updates = await getUpdatesForHost(host);
             setMachines(prev => prev.map(m =>
-                m.key === host ? { ...m, updates } : m
+                m.key === host ? { ...m, state: "connected", updates } : m
             ));
         } catch (error) {
             const err = error as Error;
@@ -445,7 +493,7 @@ const MachinesDashboard = () => {
             ));
             addAlert("danger", cockpit.format(_("Failed to check updates on $0: $1"), host, err.message));
         }
-    }, [addAlert]);
+    }, [addAlert, machines]);
     
     // Update a specific machine
     const updateMachine = useCallback(async (host: string, securityOnly = false) => {
