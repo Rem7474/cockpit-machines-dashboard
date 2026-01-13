@@ -128,21 +128,23 @@ const MachineCard = ({
     
     const hasSecurityUpdates = machine.updates.security > 0;
     const hasUpdates = machine.updates.total > 0;
+    const isDisabled = machine.state !== "connected" || machine.updating;
     
     return (
         <Card 
             className={`machine-card ${stateClass}`} 
             isSelectable 
             isSelected={isSelected}
-            selectableActions={{
-                selectableActionId: `select-${machine.key}`,
-                selectableActionAriaLabel: cockpit.format(_("Select $0"), machine.label),
-                isChecked: isSelected,
-                onChange: (_event, checked) => onSelect(machine.key, checked),
-                isDisabled: machine.state !== "connected" || machine.updating
-            }}
+            isDisabled={isDisabled}
         >
-            <CardHeader>
+            <CardHeader
+                selectableActions={{
+                    selectableActionId: `select-${machine.key}`,
+                    selectableActionAriaLabel: cockpit.format(_("Select $0"), machine.label),
+                    onChange: (_event, checked) => onSelect(machine.key, checked),
+                    name: `machine-select-${machine.key}`,
+                }}
+            >
                 <CardTitle>
                     <div className="machine-header">
                         <div 
