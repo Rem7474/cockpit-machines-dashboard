@@ -9,9 +9,9 @@
  * (at your option) any later version.
  */
 
-/* PatternFly styles */
-@use "@patternfly/patternfly/patternfly.scss";
-@use "@patternfly/patternfly/patternfly-addons.scss";
+/* PatternFly styles - import precompiled CSS */
+@import "@patternfly/patternfly/patternfly.css";
+@import "@patternfly/patternfly/patternfly-addons.css";
 
 /* Dashboard specific styles */
 .dashboard-page {
