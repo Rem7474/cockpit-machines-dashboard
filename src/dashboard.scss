@@ -16,6 +16,12 @@
 /* Dark theme support: PatternFly v6 uses CSS variables that automatically 
    adapt when .pf-v6-theme-dark class is applied to the document */
 
+/* Ensure the body inherits the theme colors */
+body {
+    background-color: var(--pf-v6-global--BackgroundColor--100);
+    color: var(--pf-v6-global--Color--100);
+}
+
 /* Dashboard specific styles - automatically supports light and dark themes */
 .dashboard-page {
     padding: var(--pf-v6-global--spacer--md);
