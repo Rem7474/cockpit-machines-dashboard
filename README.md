@@ -9,7 +9,6 @@ A standalone Cockpit module to manage updates across all machines connected to y
 - 🛡️ **Security Updates**: Identify and quickly install security patches
 - ✅ **Batch Updates**: Update all machines or a selection with a single click
 - 📈 **Real-time Tracking**: Follow update progress with progress bars
-- 🌙 **Dark Theme Support**: Automatically adapts to your system theme
 
 ## Installation
 
@@ -100,7 +99,7 @@ cockpit-machines-dashboard/
 │   ├── manifest.json      # Cockpit module configuration
 │   ├── index.html         # HTML entry point
 │   ├── dashboard.tsx      # Main React component
-│   ├── dashboard.scss     # SCSS styles (light & dark theme)
+│   ├── dashboard.scss     # SCSS styles
 │   ├── machines-api.ts    # API for machines and PackageKit
 │   └── types/
 │       └── cockpit.d.ts   # TypeScript types for Cockpit
@@ -125,11 +124,6 @@ The module uses PackageKit via D-Bus to:
 
 The module uses machines configured in Cockpit (stored in session storage).
 No additional configuration is needed.
-
-## Theme Support
-
-The dashboard automatically adapts to your system's light or dark theme. PatternFly v6 CSS variables handle all theme-related styling.
-
 ## License
 
 LGPL-2.1-or-later
