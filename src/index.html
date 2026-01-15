@@ -29,6 +29,31 @@ along with Cockpit; If not, see <https://www.gnu.org/licenses/>.
 <body class="pf-v6-m-tabular-nums">
     <div id="app"></div>
     <script src="../base1/cockpit.js"></script>
+    <script>
+        // Apply dark theme based on Cockpit preferences
+        (function() {
+            const style = window.localStorage.getItem('shell:style') || 'auto';
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            if (style === 'dark' || (style === 'auto' && prefersDark)) {
+                document.documentElement.classList.add('pf-v6-theme-dark');
+            }
+            
+            // Listen for theme changes
+            window.addEventListener('storage', function(e) {
+                if (e.key === 'shell:style') {
+                    const newStyle = e.newValue || 'auto';
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    
+                    if (newStyle === 'dark' || (newStyle === 'auto' && prefersDark)) {
+                        document.documentElement.classList.add('pf-v6-theme-dark');
+                    } else {
+                        document.documentElement.classList.remove('pf-v6-theme-dark');
+                    }
+                }
+            });
+        })();
+    </script>
     <script src="dashboard.js"></script>
 </body>
 

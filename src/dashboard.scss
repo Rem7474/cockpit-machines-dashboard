@@ -13,6 +13,9 @@
 @import "@patternfly/patternfly/patternfly.css";
 @import "@patternfly/patternfly/patternfly-addons.css";
 
+/* Dark theme support: PatternFly v6 uses CSS variables that automatically 
+   adapt when .pf-v6-theme-dark class is applied to the document */
+
 /* Dashboard specific styles - automatically supports light and dark themes */
 .dashboard-page {
     padding: var(--pf-v6-global--spacer--md);
