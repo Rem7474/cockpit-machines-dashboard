@@ -1,81 +1,82 @@
 # Cockpit Machines Dashboard
 
-Un module Cockpit standalone pour gérer les mises à jour sur toutes les machines connectées à votre instance Cockpit.
+A standalone Cockpit module to manage updates across all machines connected to your Cockpit instance.
 
-## Fonctionnalités
+## Features
 
-- 📊 **Vue d'ensemble** : Visualisez rapidement le statut de toutes vos machines
-- 🔄 **Mises à jour centralisées** : Gérez les mises à jour de toutes vos machines depuis un seul endroit
-- 🛡️ **Mises à jour de sécurité** : Identifiez et installez rapidement les correctifs de sécurité
-- ✅ **Mise à jour groupée** : Mettez à jour toutes les machines ou une sélection en un clic
-- 📈 **Suivi en temps réel** : Suivez la progression des mises à jour avec des barres de progression
+- 📊 **Dashboard Overview**: Quickly visualize the status of all your machines
+- 🔄 **Centralized Updates**: Manage updates for all your machines from a single place
+- 🛡️ **Security Updates**: Identify and quickly install security patches
+- ✅ **Batch Updates**: Update all machines or a selection with a single click
+- 📈 **Real-time Tracking**: Follow update progress with progress bars
+- 🌙 **Dark Theme Support**: Automatically adapts to your system theme
 
 ## Installation
 
-### Prérequis
+### Prerequisites
 
-- **Git** : pour cloner le projet
-- **Node.js 18+** et **npm** : pour gérer les dépendances JavaScript
-- **Make** : pour exécuter les scripts de build et d'installation
-- Un serveur avec **Cockpit** installé
-- **PackageKit** sur les machines à gérer
+- **Git**: to clone the project
+- **Node.js 18+** and **npm**: to manage JavaScript dependencies
+- **Make**: to run build and installation scripts
+- A server with **Cockpit** installed
+- **PackageKit** on the machines to manage
 
-#### Installation des prérequis (Debian/Ubuntu)
+#### Installing prerequisites (Debian/Ubuntu)
 
 ```bash
 sudo apt update
 sudo apt install git make npm nodejs
 ```
 
-#### Installation des prérequis (RHEL/CentOS/Fedora)
+#### Installing prerequisites (RHEL/CentOS/Fedora)
 
 ```bash
 sudo dnf install git make npm nodejs
 ```
 
-### Développement local
+### Local Development
 
 ```bash
-# Cloner le projet
+# Clone the project
 cd cockpit-machines-dashboard
 
-# Installer les dépendances
+# Install dependencies
 npm install
 
-# Construire le projet
+# Build the project
 npm run build
 
-# Installer dans votre répertoire utilisateur (pour le développement)
+# Install in your user directory (for development)
 make install-home
 ```
 
-### Installation système
+### System Installation
 
 ```bash
-# Construire et installer
+# Build and install
 make
 sudo make install
 ```
 
-### Depuis une archive
+### From an Archive
 
 ```bash
-# Créer une archive de distribution
+# Create a distribution archive
 make dist
 
-# L'archive peut ensuite être installée sur n'importe quel système
+# The archive can then be installed on any system
 tar -xzf machines-dashboard-*.tar.gz -C /usr/share/cockpit/
 ```
 
-## Développement
+## Development
 
-### Mode watch (reconstruction automatique)
+### Watch mode (automatic rebuild)
 
 ```bash
 npm run watch
 ```
 
-### Vérification des types TypeScript
+### TypeScript type checking
 
 ```bash
 npm run typecheck
@@ -87,48 +88,52 @@ npm run typecheck
 npm run lint
 ```
 
-## Structure du projet
+## Project Structure
 
 ```
 cockpit-machines-dashboard/
-├── package.json           # Dépendances et scripts npm
-├── webpack.config.js      # Configuration Webpack
-├── tsconfig.json          # Configuration TypeScript
-├── Makefile               # Scripts d'installation
+├── package.json           # npm dependencies and scripts
+├── webpack.config.js      # Webpack configuration
+├── tsconfig.json          # TypeScript configuration
+├── Makefile               # Installation scripts
 ├── src/
-│   ├── manifest.json      # Configuration du module Cockpit
-│   ├── index.html         # Page HTML d'entrée
-│   ├── dashboard.tsx      # Composant React principal
-│   ├── dashboard.scss     # Styles SCSS
-│   ├── machines-api.ts    # API pour les machines et PackageKit
+│   ├── manifest.json      # Cockpit module configuration
+│   ├── index.html         # HTML entry point
+│   ├── dashboard.tsx      # Main React component
+│   ├── dashboard.scss     # SCSS styles (light & dark theme)
+│   ├── machines-api.ts    # API for machines and PackageKit
 │   └── types/
-│       └── cockpit.d.ts   # Types TypeScript pour Cockpit
-└── dist/                  # Fichiers compilés (généré)
+│       └── cockpit.d.ts   # TypeScript types for Cockpit
+└── dist/                  # Compiled files (generated)
 ```
 
-## Utilisation
+## Usage
 
-1. Après installation, accédez à Cockpit via votre navigateur
-2. Le "Machines Dashboard" apparaît dans le menu de navigation
-3. Ajoutez des machines via le sélecteur d'hôtes dans la barre de navigation
-4. Utilisez le dashboard pour voir et gérer les mises à jour
+1. After installation, access Cockpit via your browser
+2. "Machines Dashboard" appears at the top of the navigation menu
+3. Add machines via the host selector in the navigation bar
+4. Use the dashboard to view and manage updates
 
-## API PackageKit
+## PackageKit API
 
-Le module utilise PackageKit via D-Bus pour :
-- `GetUpdates` : Récupérer la liste des mises à jour disponibles
-- `UpdatePackages` : Installer les mises à jour
-- `RefreshCache` : Rafraîchir le cache des paquets
+The module uses PackageKit via D-Bus to:
+- `GetUpdates`: Retrieve the list of available updates
+- `UpdatePackages`: Install updates
+- `RefreshCache`: Refresh the package cache
 
 ## Configuration
 
-Le module utilise les machines configurées dans Cockpit (stockées en session storage).
-Aucune configuration supplémentaire n'est nécessaire.
+The module uses machines configured in Cockpit (stored in session storage).
+No additional configuration is needed.
 
-## Licence
+## Theme Support
+
+The dashboard automatically adapts to your system's light or dark theme. PatternFly v6 CSS variables handle all theme-related styling.
+
+## License
 
 LGPL-2.1-or-later
 
-## Contribution
+## Contributing
 
-Les contributions sont les bienvenues ! N'hésitez pas à ouvrir des issues ou des pull requests.
+Contributions are welcome! Feel free to open issues or pull requests.
