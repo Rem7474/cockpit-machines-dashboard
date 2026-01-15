@@ -286,10 +286,66 @@ export async function installUpdatesOnHost(
         
         await transaction.wait();
         
+        // First, get the list of updates to install
+        const packageIds: string[] = [];
+        
+        pkProxy.subscribe(
+            { path: transactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "Package" },
+            (_path: string, _iface: string, _signal: string, args: unknown[]) => {
+                const packageId = args[1] as string;
+                if (packageId) {
+                    packageIds.push(packageId);
+                }
+            }
+        );
+        
+        // Get the list of updates
+        await new Promise<void>((resolve, reject) => {
+            pkProxy.subscribe(
+                { path: transactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "Finished" },
+                () => resolve()
+            );
+            pkProxy.subscribe(
+                { path: transactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "ErrorCode" },
+                (_path: string, _iface: string, _signal: string, args: unknown[]) => {
+                    reject(new Error(args[1] as string));
+                }
+            );
+            
+            // GetUpdates to get the package IDs
+            const getUpdatesFlags = securityOnly ? 4 : 0;
+            (transaction as unknown as { GetUpdates: (flags: number) => Promise<void> })
+                .GetUpdates(getUpdatesFlags).catch(reject);
+        });
+        
+        // If no updates found, return early
+        if (packageIds.length === 0) {
+            return { success: true, rebootRequired: false };
+        }
+        
+        // Create a new transaction for installation
+        const installTransactionPath = await pkProxy.call(
+            "/org/freedesktop/PackageKit",
+            "org.freedesktop.PackageKit",
+            "CreateTransaction",
+            []
+        ) as [string];
+        
+        if (!installTransactionPath || !installTransactionPath[0]) {
+            throw new Error(_("Failed to create PackageKit transaction"));
+        }
+        
+        const installTransaction = pkProxy.proxy(
+            "org.freedesktop.PackageKit.Transaction",
+            installTransactionPath[0]
+        );
+        
+        await installTransaction.wait();
+        
         // Subscribe to progress
         if (onProgress) {
             pkProxy.subscribe(
-                { path: transactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "Percentage" },
+                { path: installTransactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "Percentage" },
                 (_path: string, _iface: string, _signal: string, args: unknown[]) => {
                     const percent = args[0] as number;
                     if (percent <= 100) {
@@ -299,7 +355,7 @@ export async function installUpdatesOnHost(
             );
             
             pkProxy.subscribe(
-                { path: transactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "ItemProgress" },
+                { path: installTransactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "ItemProgress" },
                 (_path: string, _iface: string, _signal: string, args: unknown[]) => {
                     const packageId = args[0] as string;
                     const percent = args[1] as number;
@@ -316,7 +372,7 @@ export async function installUpdatesOnHost(
         // Wait for completion
         await new Promise<void>((resolve, reject) => {
             pkProxy.subscribe(
-                { path: transactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "Finished" },
+                { path: installTransactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "Finished" },
                 (_path: string, _iface: string, _signal: string, args: unknown[]) => {
                     // exit value 1 means reboot required
                     const exitCode = args[0] as number;
@@ -326,17 +382,16 @@ export async function installUpdatesOnHost(
             );
             
             pkProxy.subscribe(
-                { path: transactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "ErrorCode" },
+                { path: installTransactionPath[0], interface: "org.freedesktop.PackageKit.Transaction", member: "ErrorCode" },
                 (_path: string, _iface: string, _signal: string, args: unknown[]) => {
                     reject(new Error(args[1] as string));
                 }
             );
             
-            // UpdatePackages: installs all available updates
-            // Flags: 1 = ONLY_TRUSTED, 4 = SECURITY if securityOnly
-            const flags = securityOnly ? 5 : 1;
-            (transaction as unknown as { UpdatePackages: (flags: number, packages: string[]) => Promise<void> })
-                .UpdatePackages(flags, []).catch(reject);
+            // UpdatePackages: installs the specific packages we found
+            // Flags: 1 = ONLY_TRUSTED
+            (installTransaction as unknown as { UpdatePackages: (flags: number, packages: string[]) => Promise<void> })
+                .UpdatePackages(1, packageIds).catch(reject);
         });
         
         return { success: true, rebootRequired };
